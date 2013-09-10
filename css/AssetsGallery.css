@@ -1,18 +1,17 @@
 .AssetsGallery_Folders li, .AssetsGallery_Files li {
 	font-family: 'Skranji', 'Comic Sans', cursive;
 	font-size: 110%;
-	list-style-type:none; 
+	list-style-type:none !important; 
 	display: inline-block;
-	background-color: white;
+	background-color: white !important;
 	border: 1px solid #4D4D4D;
 	float: left;
-	padding: 1em;
-	margin: 1em 1em 1em 0px;
-  box-shadow: 5px 5px 5px #4D4D4D;
+	padding: 1em !important;
+	margin: 1em 1em 1em 0px !important;
+  box-shadow: 5px 5px 5px #4D4D4D !important;
   width: 201px;
   height: 233px;
   overflow: hidden;
-  
 }
 
 .AssetsGallery_Folders a, .AssetsGallery_Files a {
@@ -24,21 +23,25 @@
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
 	border-radius: 10px;
-	background-color: #FFE57F;
+	background-color: #FFE57F !important;
 
 	border: 1px solid #B1912A;
 	/* IE10 Consumer Preview */ 
-	background-image: -ms-linear-gradient(bottom, #FFCA4A 0%, #FFFFB3 100%);
+	background-image: -ms-linear-gradient(bottom, #FFCA4A 0%, #FFFFB3 100%) !important;
 	/* Mozilla Firefox */ 
-	background-image: -moz-linear-gradient(bottom, #FFCA4A 0%, #FFFFB3 100%);
+	background-image: -moz-linear-gradient(bottom, #FFCA4A 0%, #FFFFB3 100%) !important;
 	/* Opera */ 
-	background-image: -o-linear-gradient(bottom, #FFCA4A 0%, #FFFFB3 100%);
+	background-image: -o-linear-gradient(bottom, #FFCA4A 0%, #FFFFB3 100%) !important;
 	/* Webkit (Safari/Chrome 10) */ 
-	background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #FFCA4A), color-stop(1, #FFFFB3));
+	background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #FFCA4A), color-stop(1, #FFFFB3)) !important;
 	/* Webkit (Chrome 11+) */ 
-	background-image: -webkit-linear-gradient(bottom, #FFCA4A 0%, #FFFFB3 100%);
+	background-image: -webkit-linear-gradient(bottom, #FFCA4A 0%, #FFFFB3 100%) !important;
 	/* W3C Markup, IE10 Release Preview */ 
-	background-image: linear-gradient(to top, #FFCA4A 0%, #FFFFB3 100%);
+	background-image: linear-gradient(to top, #FFCA4A 0%, #FFFFB3 100%) !important;
+}
+
+.AssetsGallery_Files li {
+	background-image: none !important;
 }
 
 .AssetsGallery_Folders .info {

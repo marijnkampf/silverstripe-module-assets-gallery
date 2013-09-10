@@ -89,30 +89,33 @@ class AssetsGallery_Controller extends Page_Controller {
 */
 	}
 	
+	public function readFolder($folder = "") {
+		$folderPath = ASSETS_PATH . '/' . $folder;
+		if(!file_exists($folderPath)) {
+			$this->httpError(404);
+		}		
+		return Folder::findOrMake(str_replace(ASSETS_DIR, "", $folderPath));
+	}
+	
 	public function show(SS_HTTPRequest $request) {
+		$root = $this->readFolder($this->Folder);
+		$folderPath = "";
+		
 		if (is_null($request->param('Action'))) {
-			$folderPath = ASSETS_PATH . '/' . $this->Folder;
-			if(!file_exists($folderPath)) {
-				$this->httpError(404);
-			}
-			$folder = Folder::get_one("Folder", "\"Name\" = '" . $this->Folder . "'");
+			$folder = $root; //Folder::get_one("Folder", "\"Name\" = '" . $this->Folder . "'");;
 		} else {
-			$folderPath = ASSETS_PATH;
 			foreach($request->latestParams() as $param) {
 				if (!is_null($param)) $folderPath .= "/" . $param;
 			}
-			if(!file_exists($folderPath)) {
-				$this->httpError(404);
-			}
-			$folder = Folder::find_or_make(str_replace(ASSETS_DIR, "", $folderPath));
+			$folder = $this->readFolder($folderPath); //Folder::findOrMake(str_replace(ASSETS_DIR, "", $folderPath));
 		}
 		
-		if (class_exists("BreadcrumbNavigation")) {
+		if (class_exists("BreadcrumbNavigation") && isset($folder)) {
 			$parentFolders = explode("/", $folderPath);
 			
 			$parents = array_reverse($folder->parentStack());
 
-			for($i = 0; $i < count($parents); $i++) {
+			for($i = 2; $i < count($parents); $i++) {
 				$parents[$i]->markExpanded();
 				$parents[$i]->markOpened();
 				if ($i > 0) {
@@ -120,17 +123,18 @@ class AssetsGallery_Controller extends Page_Controller {
 					$do->Link = $parents[$i]->AbsoluteLink();
 					$do->MenuTitle = $parents[$i]->MenuTitle();
 					if ($i == count($parents)-1) $do->isSelf = true;
-					$this->owner->AddBreadcrumbAfter($do);
+					$this->owner->AddAfter($do);
 				}
 			}
+
+			$this->MetaTitle = "Gallery: " . $parents[count($parents)-1]->MenuTitle();
 		}
 		
-		
-//		Debug::Show($parentFolders);
 		
 		return $this->customise(array(
 			'Content' => $this->customise(
 				array(
+					'RootFolder' => $root,
 					'CurrentFolder' => $folder
 				))->renderWith('AssetsGalleryMain', 'Page'),
 			'Form' => '',
@@ -138,13 +142,8 @@ class AssetsGallery_Controller extends Page_Controller {
 	}
 	
 	public function index() {
-		$folder = ASSETS_PATH . '/' . $this->Folder;
-		if(!file_exists($folder)) {
-			$this->httpError(404);
-		}
-		$folder = Folder::get_one("Folder", "\"Name\" = '" . $this->Folder . "'");
+		$this->readFolder($this->Folder);
 		
-//		Debug::Show($folder->myChildren());
 		return $this->customise(array(
 			'Content' => $this->customise(
 				array(
@@ -155,21 +154,22 @@ class AssetsGallery_Controller extends Page_Controller {
 	}
 	
 	public function AssetsGallerySideBarMenu() {
-		//Debug::Show("AssetsGallerySideBarMenu " . $this->Folder . " " . Director::absoluteBaseURL () . " " . $this->AbsoluteLink());
-		$folder = Folder::get_one("Folder", "\"Name\" = '" . $this->Folder . "'");
+		$folder = $this->readFolder($this->Folder);
 		$folder->markUnexpanded();
 		
-		return $this->customise(array('Root' => $folder))->renderWith('AssetsGallerySideBar');
+		return $this->customise(array(
+			'RootFolder' => $folder
+		))->renderWith('AssetsGallerySideBar');
 
 
-		$this->renderWith("AssetsGallerySideBarMenu");		
+//		$this->renderWith("AssetsGallerySideBarMenu");		
 		//$widget = new RSSWidget();
 		//$widget->RssUrl = "http://feeds.feedburner.com/silverstripe-blog";
 		//return $widget->renderWith("AssetsGallerySideBarMenu");		
 	}
 }
 
-class AssetsGalleryFolder extends DataExtension {
+class AssetsGalleryFolder extends DataObjectDecorator {
 	static $db = array(
 	);
 
@@ -178,7 +178,7 @@ class AssetsGalleryFolder extends DataExtension {
 	);
 	
 	public function getThumbnail() {
-		if ($this->owner->Thumbnail()->ID != 0) {
+		if ($this->owner->ThumbnailID != 0) {
 			return $this->owner->Thumbnail();
 		} else {
 			foreach($this->owner->Children() as $child) {
@@ -206,11 +206,17 @@ class AssetsGalleryFolder extends DataExtension {
   public function updateCMSFields(FieldList $fields) {
   	$fields->push($uploadField = new TextField("Caption", "Text"));
 
-  	$fields->push($uploadField = new UploadField("Thumbnail", "Thumbnail"));
+/*  	$fields->push($uploadField = new UploadField("Thumbnail", "Thumbnail"));
   	$uploadField->setConfig('canUpload', 'false');
   	$uploadField->setFolderName(str_replace(ASSETS_DIR, "", $this->owner->getRelativePath()));
   	$uploadField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
-  	//$fields = new FileField("Thumbnail", "Thumbnail");
+  	*/
+
+
+		//$fields->push($fup = new ImageUploadField('Image', 'Thumbnail'));
+  	
+//  	$fields->push($fup = new FileUploadField('Thumbnail'));
+//  	$fields = new FileField("Thumbnail", "Thumbnail");
   	return $fields;
   }
 
@@ -219,7 +225,8 @@ class AssetsGalleryFolder extends DataExtension {
 	}
 	
 	public function getFileCount() {
-		return $this->owner->Children()->Count() - $this->owner->ChildFolders()->Count();
+		return count($this->owner->Children()) - count($this->owner->ChildFolders());
+	//	return $this->owner->Children()->Count() - $this->owner->ChildFolders()->Count();
 	}
 	
 	public function LinkingMode() {
@@ -227,7 +234,7 @@ class AssetsGalleryFolder extends DataExtension {
 	}
 }
 
-class AssetsGalleryFile extends DataExtension {
+class AssetsGalleryFile extends DataObjectDecorator {
 	public function Basename() {
 		return basename($this->owner->getFilename(), "." . 	$this->owner->getExtension());
 	}	
