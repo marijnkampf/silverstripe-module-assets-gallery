@@ -79,22 +79,14 @@ class AssetsGallery_Controller extends Page_Controller {
 		
 
 		Requirements::css(ASSETS_GALLERY_BASE . '/css/AssetsGallery.css');
-
-				
-/*		
-		// load the jquery
-		Requirements::javascript(FRAMEWORK_DIR .'/thirdparty/jquery/jquery.js');
-		Requirements::javascript('userforms/thirdparty/jquery-validate/jquery.validate.min.js');
-		Requirements::javascript('userforms/javascript/UserForm_frontend.js');
-*/
 	}
-	
+
 	public function readFolder($folder = "") {
 		$folderPath = ASSETS_PATH . '/' . $folder;
 		if(!file_exists($folderPath)) {
 			$this->httpError(404);
 		}		
-		return Folder::findOrMake(str_replace(ASSETS_DIR, "", $folderPath));
+		return Folder::find_or_make(str_replace(ASSETS_DIR, "", $folderPath));
 	}
 	
 	public function show(SS_HTTPRequest $request) {
@@ -102,12 +94,12 @@ class AssetsGallery_Controller extends Page_Controller {
 		$folderPath = "";
 		
 		if (is_null($request->param('Action'))) {
-			$folder = $root; //Folder::get_one("Folder", "\"Name\" = '" . $this->Folder . "'");;
+			$folder = $root;
 		} else {
 			foreach($request->latestParams() as $param) {
 				if (!is_null($param)) $folderPath .= "/" . $param;
 			}
-			$folder = $this->readFolder($folderPath); //Folder::findOrMake(str_replace(ASSETS_DIR, "", $folderPath));
+			$folder = $this->readFolder($folderPath);
 		}
 		
 		if (class_exists("BreadcrumbNavigation") && isset($folder)) {
@@ -142,8 +134,8 @@ class AssetsGallery_Controller extends Page_Controller {
 	}
 	
 	public function index() {
-		$this->readFolder($this->Folder);
-		
+		$folder = $this->readFolder($this->Folder);
+
 		return $this->customise(array(
 			'Content' => $this->customise(
 				array(
@@ -152,33 +144,32 @@ class AssetsGallery_Controller extends Page_Controller {
 			'Form' => '',
 		));
 	}
-	
+
 	public function AssetsGallerySideBarMenu() {
 		$folder = $this->readFolder($this->Folder);
-		$folder->markUnexpanded();
-		
+		$folder->markExpanded();
+
 		return $this->customise(array(
 			'RootFolder' => $folder
-		))->renderWith('AssetsGallerySideBar');
+		))->renderWith('AssetsGallerySidebar');
+	}
 
-
-//		$this->renderWith("AssetsGallerySideBarMenu");		
-		//$widget = new RSSWidget();
-		//$widget->RssUrl = "http://feeds.feedburner.com/silverstripe-blog";
-		//return $widget->renderWith("AssetsGallerySideBarMenu");		
+	public function Path() {
+		return "show" . str_replace(array(ASSETS_DIR, "//"), array("", "/"), $this->owner->getRelativePath());
 	}
 }
 
-class AssetsGalleryFolder extends DataObjectDecorator {
+class AssetsGalleryFolder extends DataExtension {
+	var $currentPage = null;
 	static $db = array(
 	);
 
 	static $has_one = array(
 			'Thumbnail' => 'Image',
 	);
-	
+
 	public function getThumbnail() {
-		if ($this->owner->ThumbnailID != 0) {
+		if ($this->owner->Thumbnail()->ID != 0) {
 			return $this->owner->Thumbnail();
 		} else {
 			foreach($this->owner->Children() as $child) {
@@ -189,7 +180,7 @@ class AssetsGalleryFolder extends DataObjectDecorator {
 		}
 		return null;
 	}
-	
+
 	public function MenuTitle() {
 		return str_replace("-", " ", $this->owner->Name);
 	}
@@ -206,17 +197,11 @@ class AssetsGalleryFolder extends DataObjectDecorator {
   public function updateCMSFields(FieldList $fields) {
   	$fields->push($uploadField = new TextField("Caption", "Text"));
 
-/*  	$fields->push($uploadField = new UploadField("Thumbnail", "Thumbnail"));
+  	$fields->push($uploadField = new UploadField("Thumbnail", "Thumbnail"));
   	$uploadField->setConfig('canUpload', 'false');
   	$uploadField->setFolderName(str_replace(ASSETS_DIR, "", $this->owner->getRelativePath()));
   	$uploadField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
-  	*/
-
-
-		//$fields->push($fup = new ImageUploadField('Image', 'Thumbnail'));
-  	
-//  	$fields->push($fup = new FileUploadField('Thumbnail'));
-//  	$fields = new FileField("Thumbnail", "Thumbnail");
+  	//$fields = new FileField("Thumbnail", "Thumbnail");
   	return $fields;
   }
 
@@ -225,16 +210,55 @@ class AssetsGalleryFolder extends DataObjectDecorator {
 	}
 	
 	public function getFileCount() {
-		return count($this->owner->Children()) - count($this->owner->ChildFolders());
-	//	return $this->owner->Children()->Count() - $this->owner->ChildFolders()->Count();
+		return $this->owner->Children()->Count() - $this->owner->ChildFolders()->Count();
+	}
+
+	public function getCurrentPage() {
+		if (!is_null($this->currentPage)) return $this->currentPage;
+		$curr = Controller::curr()->getURLParams();
+		array_shift($curr);
+		return $this->currentPage = trim(implode("/", $curr), "/");
+	}	
+
+ /**
+	* Return "link", "current" or section depending on if this page is the current page, or not on the current page but
+	* in the current section.
+	*
+	* @return string
+	*/
+	public function LinkingMode() {
+		if($this->isCurrent()) {
+			return 'current';
+		} elseif($this->isSection()) {
+			return 'section';
+		} else {
+			return 'link';
+		}
 	}
 	
-	public function LinkingMode() {
-		
+ /**
+	* Returns TRUE if this is the currently active page that is being used to handle a request.
+	*
+	* @return bool
+	*/
+	public function isCurrent() {
+		return $this->getCurrentPage() == trim($this->Path(), "/");
+	}
+
+ /**
+	* Check if this page is in the currently active section (e.g. it is either current or one of it's children is
+	* currently being viewed.
+	*
+	* @return bool
+	*/
+	public function isSection() {
+		return $this->isCurrent() || (
+			strpos($this->getCurrentPage(), $this->Path()) === 0
+		);
 	}
 }
 
-class AssetsGalleryFile extends DataObjectDecorator {
+class AssetsGalleryFile extends DataExtension {
 	public function Basename() {
 		return basename($this->owner->getFilename(), "." . 	$this->owner->getExtension());
 	}	

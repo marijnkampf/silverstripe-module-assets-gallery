@@ -8,7 +8,7 @@ class Lightbox extends ImageGalleryUI
 	
 	public function initialize()
 	{
-//		Requirements::javascript(THIRDPARTY_DIR.'/jquery/jquery.js'); 
+		Requirements::javascript(THIRDPARTY_DIR.'/jquery/jquery.js'); 
 		Requirements::javascript(ASSETS_GALLERY_BASE.'/gallery_ui/lightbox/javascript/jquery.lightbox-0.5.js');
 		Requirements::javascript(ASSETS_GALLERY_BASE.'/gallery_ui/lightbox/javascript/lightbox_init.js');
 		Requirements::css(ASSETS_GALLERY_BASE.'/gallery_ui/lightbox/css/jquery.lightbox-0.5.css');

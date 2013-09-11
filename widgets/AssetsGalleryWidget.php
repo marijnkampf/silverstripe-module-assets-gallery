@@ -14,9 +14,15 @@ class AssetsGalleryWidget extends Widget {
 	}
 
 	function getCMSFields() {
-		return new FieldSet(
+		return new FieldList(
 			new TextField("WidgetTitle", "Title")
 		);
+	}
+
+	function AssetsGallerySideBarMenu() {
+		//$page = Director::get_current_page();		
+		$controller = Controller::curr();
+		return $controller->AssetsGallerySideBarMenu();
 	}
 }
 
