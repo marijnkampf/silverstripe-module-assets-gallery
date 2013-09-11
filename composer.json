@@ -12,6 +12,6 @@
 
 	"require":
 	{
-		"silverstripe/cms": ">=2.3.*,2.4.*"
+		"silverstripe/cms": ">=2.3,2.4"
 	}
 }
