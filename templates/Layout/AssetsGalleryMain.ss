@@ -1,3 +1,8 @@
+
+  $Content
+  $Form
+
+
 <% if $CurrentFolder.ChildFolders %>
 <div class="AssetsGallery_Folders">
 <ul>
