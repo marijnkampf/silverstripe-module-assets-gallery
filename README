@@ -1,0 +1,23 @@
+# Silverstripe Assets Gallery Module
+Turns assets folder into basic gallery with slideshow.
+
+## Maintainer contact
+ * Marijn Kampf (Nickname: marijnkampf)
+  <marijn at exadium dot com>
+   
+   http://www.exadium.com/tools/silverstripe/modules/
+   
+   Sponsored by Exadium Web Development
+
+## Requirements
+SilverStripe 3.1
+
+##Documentation
+###Installation
+* Download from github
+* Create page with Assets Gallery page type
+* Enter subfolder in settings e.g. /gallery/
+
+Works with Breadcrumbnavigation module https://github.com/marijnkampf/Silverstripe-Module-BreadcrumbNavigation
+
+Image gallery lightbox / colorbox based on code by unclecheese: http://www.silverstripe.org/imagegallery-module/
