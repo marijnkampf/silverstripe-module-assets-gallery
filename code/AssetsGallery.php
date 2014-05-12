@@ -5,7 +5,7 @@
  */
 
 class AssetsGallery extends Page {
-	
+
 	/**
 	 * @var string
 	 */
@@ -17,10 +17,10 @@ class AssetsGallery extends Page {
 	public static $db = array(
 		"Folder" => "Varchar",
 	);
-	
+
 	/**
 	 * @var array Default values of variables when this page is created
-	 */ 
+	 */
 	public static $defaults = array(
 	);
 
@@ -36,10 +36,10 @@ class AssetsGallery extends Page {
 	public static $has_many = array(
 	);
 
-	
+
 	/**
 	 * Setup the CMS Fields for the User Defined Form
-	 * 
+	 *
 	 * @return FieldSet
 	 */
 	public function getCMSFields() {
@@ -47,10 +47,10 @@ class AssetsGallery extends Page {
 
 		$fields->findOrMakeTab('Root.Gallery', _t('FileGallery.GALLERY', 'Gallery'));
 		$fields->addFieldToTab("Root.Gallery", new TextField('Folder',_t('FileGallery.FOLDER',"Root folder")));
-		
+
 		return $fields;
 	}
-	
+
 	public function index() {
 		Debug::Show("index()");
 	}
@@ -63,20 +63,24 @@ class AssetsGallery extends Page {
  */
 
 class AssetsGallery_Controller extends Page_Controller {
+		private static $allowed_actions = array (
+			'show'
+		);
+
     public static $url_handlers = array(
         'show/$a/$b/$c/$d/$e/$f/$g/$h/$i/$j/$k' => 'show',
         '$a/$b/$c/$d/$e/$f/$g/$h/$i/$j/$k' => 'show'
     );
-	
+
 	/**
-	 * Load all the custom jquery needed to run the custom 
-	 * validation 
+	 * Load all the custom jquery needed to run the custom
+	 * validation
 	 */
 	public function init() {
 		parent::init();
 		$ui = new Colorbox();
 		$ui->initialize();
-		
+
 
 		Requirements::css(ASSETS_GALLERY_BASE . '/css/AssetsGallery.css');
 	}
@@ -85,14 +89,14 @@ class AssetsGallery_Controller extends Page_Controller {
 		$folderPath = ASSETS_PATH . '/' . $folder;
 		if(!file_exists($folderPath)) {
 			$this->httpError(404);
-		}		
+		}
 		return Folder::find_or_make(str_replace(ASSETS_DIR, "", $folderPath));
 	}
-	
+
 	public function show(SS_HTTPRequest $request) {
 		$root = $this->readFolder($this->Folder);
 		$folderPath = "";
-		
+
 		if (is_null($request->param('Action'))) {
 			$folder = $root;
 		} else {
@@ -101,10 +105,10 @@ class AssetsGallery_Controller extends Page_Controller {
 			}
 			$folder = $this->readFolder($folderPath);
 		}
-		
+
 		if (class_exists("BreadcrumbNavigation") && isset($folder)) {
 			$parentFolders = explode("/", $folderPath);
-			
+
 			$parents = array_reverse($folder->parentStack());
 
 			for($i = 2; $i < count($parents); $i++) {
@@ -121,8 +125,8 @@ class AssetsGallery_Controller extends Page_Controller {
 
 			$this->MetaTitle = "Gallery: " . $parents[count($parents)-1]->MenuTitle();
 		}
-		
-		
+
+
 		return $this->customise(array(
 			'Content' => $this->customise(
 				array(
@@ -132,7 +136,7 @@ class AssetsGallery_Controller extends Page_Controller {
 			'Form' => '',
 		));
 	}
-	
+
 	public function index() {
 		$folder = $this->readFolder($this->Folder);
 
@@ -189,7 +193,7 @@ class AssetsGalleryFolder extends DataExtension {
 //		Debug::Show("AbsoluteLink " . " " . Director::absoluteBaseURL () . " " . Director::get_current_page()->AbsoluteLink() . " " . $this->Path());
 		return Director::get_current_page()->AbsoluteLink() . $this->Path();
 	}
-	
+
 	public function Path() {
 		return "show" . str_replace(array(ASSETS_DIR, "//"), array("", "/"), $this->owner->getRelativePath());
 	}
@@ -208,7 +212,7 @@ class AssetsGalleryFolder extends DataExtension {
 	static function isFolder() {
 		return true;
 	}
-	
+
 	public function getFileCount() {
 		return $this->owner->Children()->Count() - $this->owner->ChildFolders()->Count();
 	}
@@ -218,7 +222,7 @@ class AssetsGalleryFolder extends DataExtension {
 		$curr = Controller::curr()->getURLParams();
 		array_shift($curr);
 		return $this->currentPage = trim(implode("/", $curr), "/");
-	}	
+	}
 
  /**
 	* Return "link", "current" or section depending on if this page is the current page, or not on the current page but
@@ -235,7 +239,7 @@ class AssetsGalleryFolder extends DataExtension {
 			return 'link';
 		}
 	}
-	
+
  /**
 	* Returns TRUE if this is the currently active page that is being used to handle a request.
 	*
@@ -261,8 +265,8 @@ class AssetsGalleryFolder extends DataExtension {
 class AssetsGalleryFile extends DataExtension {
 	public function Basename() {
 		return basename($this->owner->getFilename(), "." . 	$this->owner->getExtension());
-	}	
-	
+	}
+
 	static function isFolder() {
 		return false;
 	}
