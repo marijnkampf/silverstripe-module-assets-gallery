@@ -172,12 +172,15 @@ class AssetsGalleryFolder extends DataExtension {
 			'Thumbnail' => 'Image',
 	);
 
-	public function getThumbnail() {
+	/* Get folder thumbnail
+	   If no thumbnail set, use first image thumbnail in children
+	   */
+	public function getFolderThumbnail() {
 		if ($this->owner->Thumbnail()->ID != 0) {
 			return $this->owner->Thumbnail();
 		} else {
 			foreach($this->owner->Children() as $child) {
-				if (!$child->isFolder) {
+				if ($child->ClassName != 'Folder') {
 					return $child;
 				}
 			}

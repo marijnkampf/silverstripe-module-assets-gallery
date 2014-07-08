@@ -7,7 +7,7 @@
 <div class="AssetsGallery_Folders">
 <ul>
 	<% loop $CurrentFolder.ChildFolders  %>
-		<li><a href="{$Top.Link}{$Path}">$getThumbnail.CroppedImage(200,150)<br/>$MenuTitle</a>
+		<li><a href="{$Top.Link}{$Path}">$getFolderThumbnail.CroppedImage(200,150)<br/>$MenuTitle</a>
 			<div class="info">
 				<% if $ChildFolders %>$ChildFolders.Count folder(s)<br/><% end_if %>
 				<% if $getFileCount %>$getFileCount item(s)<br/><% end_if %>
