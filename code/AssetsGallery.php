@@ -119,7 +119,7 @@ class AssetsGallery_Controller extends Page_Controller {
 					$do->Link = $parents[$i]->AbsoluteLink();
 					$do->MenuTitle = $parents[$i]->MenuTitle();
 					if ($i == count($parents)-1) $do->isSelf = true;
-					$this->owner->AddAfter($do);
+					$this->owner->AddBreadcrumbAfter($do);
 				}
 			}
 
