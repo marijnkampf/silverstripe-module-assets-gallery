@@ -111,7 +111,7 @@ class AssetsGallery_Controller extends Page_Controller {
 
 			$parents = array_reverse($folder->parentStack());
 
-			for($i = 2; $i < count($parents); $i++) {
+			for($i = 1; $i < count($parents); $i++) {
 				$parents[$i]->markExpanded();
 				$parents[$i]->markOpened();
 				if ($i > 0) {
